@@ -1,0 +1,4 @@
+1. O Snowflake não permite conectar com a API da binance direto na versão free
+    --> Solução: baixar os arquivos de forma manual e depois subir de forma manual
+2. O Snowflake não permite subir arquivos de tamanho maior a 250mb por arquivos
+    --> Solução: Converter para parquet antes de subir os arquivos manualmente

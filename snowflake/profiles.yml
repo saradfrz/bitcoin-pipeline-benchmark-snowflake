@@ -1,0 +1,12 @@
+binance:
+  target: snowflake
+  outputs:
+    snowflake:
+      type: snowflake
+      account: ''
+      user: ''
+      role: ACCOUNTADMIN
+      warehouse: SNOWFLAKE_LEARNING_WH
+      database: BTC_TRADING
+      schema: BINANCE_SILVER
+      threads: 1

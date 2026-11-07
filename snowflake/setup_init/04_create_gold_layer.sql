@@ -1,0 +1,30 @@
+CREATE TABLE IF NOT EXISTS BTC_TRADING.BINANCE_GOLD.MART_BTCUSDT_SMA_50D (
+    SYMBOL           VARCHAR       NOT NULL,
+    DATA             DATE          NOT NULL,
+    PRECO_FECHAMENTO NUMBER(38, 8),
+    SMA_50D          NUMBER(38, 10),
+    PRIMARY KEY (SYMBOL, DATA)
+);
+
+CREATE TABLE IF NOT EXISTS BTC_TRADING.BINANCE_GOLD.MART_BTCUSDT_SMA_200D (
+    SYMBOL           VARCHAR       NOT NULL,
+    DATA             DATE          NOT NULL,
+    PRECO_FECHAMENTO NUMBER(38, 8),
+    SMA_200D          NUMBER(38, 10),
+    PRIMARY KEY (SYMBOL, DATA)
+);
+
+CREATE TABLE IF NOT EXISTS BTC_TRADING.BINANCE_GOLD.MART_BTCUSDT_CVD (
+    SYMBOL VARCHAR NOT NULL,
+    DATA DATE NOT NULL,
+    DELTA_BTC NUMBER(38, 8) NOT NULL COMMENT 'Daily aggressive buy volume minus aggressive sell volume, in BTC',
+    CVD_BTC NUMBER(38, 8) NOT NULL COMMENT 'Continuous cumulative sum of daily BTC deltas'
+);
+
+CREATE TABLE IF NOT EXISTS BTC_TRADING.BINANCE_GOLD.MART_BTCUSDT_VWAP (
+    symbol            VARCHAR NOT NULL,
+    data              DATE NOT NULL,
+    volume_total_btc  NUMBER(38, 8),
+    volume_total_usdt NUMBER(38, 8),
+    vwap_diario       NUMBER(38, 8)
+);

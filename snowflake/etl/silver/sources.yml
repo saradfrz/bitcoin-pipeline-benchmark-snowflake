@@ -1,0 +1,10 @@
+version: 2
+sources:
+  - name: bronze
+    database: BTC_TRADING
+    schema: BINANCE_BRONZE
+    tables:
+      - name: btcusdt_trades_bronze
+        columns:
+          - name: source_file
+            tests: [not_null]

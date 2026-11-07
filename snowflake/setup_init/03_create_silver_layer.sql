@@ -1,0 +1,21 @@
+CREATE TABLE IF NOT EXISTS BTC_TRADING.BINANCE_SILVER.BTCUSDT_TRADES (
+    trade_id BIGINT,
+    price DECIMAL(38,8),
+    quantity DECIMAL(38,8),
+    quote_quantity DECIMAL(38,8),
+    trade_time_us BIGINT,
+    trade_timestamp_utc TIMESTAMP_NTZ(6),
+    is_buyer_maker BOOLEAN,
+    is_best_match BOOLEAN,
+    symbol VARCHAR,
+    source_file VARCHAR,
+    ingested_at TIMESTAMP_LTZ(6)
+);
+
+USE WAREHOUSE SNOWFLAKE_LEARNING_WH;
+
+LIST @BTC_TRADING.BINANCE_BRONZE.LANDING_ZONE
+    PATTERN = '(.*/)?BTCUSDT-trades-[^/]*[.]parquet';
+
+DESCRIBE TABLE BTC_TRADING.BINANCE_SILVER.BTCUSDT_TRADES;
+SHOW SCHEMAS IN DATABASE BTC_TRADING;

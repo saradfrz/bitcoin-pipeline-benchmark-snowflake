@@ -1,0 +1,36 @@
+-- tables
+binance_bronze.bronze_btcusdt_trades_raw
+binance_silver.btcusdt_trades
+binance_silver.btcusdt_daily_trade_summary
+binance_gold.mart_btcusdt_sma_50d
+binance_gold.mart_btcusdt_sma_200d
+binance_gold.mart_btcusdt_cvd
+binance_gold.mart_btcusdt_vwap
+
+-- etl_files 
+bronze_btcusdt_trades_raw.sql
+silver_btcusdt_trades.sql
+silver_btcusdt_daily_trade_summary.sql
+gold_mart_btcusdt_sma_50d.sql
+gold_mart_btcusdt_sma_200d.sql
+gold_mart_btcusdt_cvd.sql
+gold_mart_btcusdt_vwap.sql
+
+-- Prompt
+Generate the next data product:
+N = '08'
+target: binance_gold.mart_btcusdt_vwap
+task: gold_mart_btcusdt_cvd.sql
+source: gold_mart_btcusdt_vwap.sql
+
+ - Generate the new snowflake/etl/gold/${etl_file}.sql
+
+ - Generate the new snowflake/orchestration/delta.sql and the new snowflake/orchestration/full.sql (add $N as the filename prefix)
+
+- Generate a '$N_ddl.sql' file with the code to create the gold table in the setup
+
+Implement separate full and delta loads for this Gold data product. In full mode, rebuild the entire target from the Silver daily summary. In delta mode, identify new or changed trading dates and recompute only the target rows affected by those changes. For MM50, a change on date D affects existing summary dates from D through D+49 inclusive. For each affected date, read the preceding 49 calendar days of Silver history plus that date, and return NULL unless all 50 daily closes are present. Merge the results by (symbol, data) so reruns are idempotent and unaffected Gold rows are preserved. A normal daily append should produce exactly one new Gold row.
+
+------------------
+
+{business_description}

@@ -1,0 +1,7 @@
+name: binance
+version: '1.0.0'
+config-version: 2
+profile: binance
+model-paths: ['etl/silver', 'etl/gold']
+macro-paths: ['macros']
+test-paths: ['checks']
