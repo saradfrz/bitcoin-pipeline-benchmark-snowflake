@@ -4,11 +4,11 @@ from pathlib import Path
 sys.path.insert(0, str(Path.cwd() / "src"))
 from binance_downloader import BinanceTradeDownloader
 
-folder = Path(r"C:\Users\sara\Downloads\binance")
+folder = Path(r"")
 
 downloader = BinanceTradeDownloader(
-    start_date="03/11/2026",
-    end_date="06/11/2026",
+    start_date="01/01/2026",
+    end_date="09/11/2026",
     volume=str(folder),
 )
 
