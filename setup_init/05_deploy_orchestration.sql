@@ -5,7 +5,7 @@ USE SCHEMA ORCHESTRATION;
 -- 1. Create the repository and the stage for the Bronze loader.
 CREATE GIT REPOSITORY IF NOT EXISTS BTC_TRADING.ORCHESTRATION.DI_PIPE_ENG_REPO
     API_INTEGRATION = "Snowflake"
-    ORIGIN = 'https://github.com/saradfrz/di-pipe-eng';
+    ORIGIN = 'https://github.com/saradfrz/bitcoin-pipeline-benchmark-snowflake';
 
 CREATE STAGE IF NOT EXISTS BTC_TRADING.ORCHESTRATION.ETL_SCRIPTS;
 
@@ -20,25 +20,25 @@ ALTER GIT REPOSITORY BTC_TRADING.ORCHESTRATION.DI_PIPE_ENG_REPO FETCH;
 -- 4. Create dbt on first deployment, then deploy the current files.
 -- ALTER DEPLOY assumes a dbt project using the mutable live version.
 CREATE DBT PROJECT IF NOT EXISTS BTC_TRADING.ORCHESTRATION.BINANCE
-    FROM '@BTC_TRADING.ORCHESTRATION.DI_PIPE_ENG_REPO/branches/main/snowflake';
+    FROM '@BTC_TRADING.ORCHESTRATION.DI_PIPE_ENG_REPO/branches/main';
 
-ALTER DBT PROJECT BTC_TRADING.ORCHESTRATION.BINANCE DEPLOY FROM '@BTC_TRADING.ORCHESTRATION.DI_PIPE_ENG_REPO/branches/main/snowflake';
+ALTER DBT PROJECT BTC_TRADING.ORCHESTRATION.BINANCE DEPLOY FROM '@BTC_TRADING.ORCHESTRATION.DI_PIPE_ENG_REPO/branches/main';
 
 -- 5. Stage the shared Bronze loader.
 COPY FILES
     INTO @BTC_TRADING.ORCHESTRATION.ETL_SCRIPTS/
-    FROM @BTC_TRADING.ORCHESTRATION.DI_PIPE_ENG_REPO/branches/main/snowflake/etl/
+    FROM @BTC_TRADING.ORCHESTRATION.DI_PIPE_ENG_REPO/branches/main/etl/
     FILES = ('bronze_btcusdt_trades_raw.sql')
     DETAILED_OUTPUT = TRUE;
 
 -- 6. Deploy the current quality procedures before their callers.
-EXECUTE IMMEDIATE FROM @BTC_TRADING.ORCHESTRATION.DI_PIPE_ENG_REPO/branches/main/snowflake/quality/dq_landing_scope.sql;
-EXECUTE IMMEDIATE FROM @BTC_TRADING.ORCHESTRATION.DI_PIPE_ENG_REPO/branches/main/snowflake/quality/dq_after_summary.sql;
+EXECUTE IMMEDIATE FROM @BTC_TRADING.ORCHESTRATION.DI_PIPE_ENG_REPO/branches/main/quality/dq_landing_scope.sql;
+EXECUTE IMMEDIATE FROM @BTC_TRADING.ORCHESTRATION.DI_PIPE_ENG_REPO/branches/main/quality/dq_after_summary.sql;
 
 
 -- 7. Deploy FULL and DELTA orchestration.
-EXECUTE IMMEDIATE FROM @BTC_TRADING.ORCHESTRATION.DI_PIPE_ENG_REPO/branches/main/snowflake/orchestration/delta.sql;
-EXECUTE IMMEDIATE FROM @BTC_TRADING.ORCHESTRATION.DI_PIPE_ENG_REPO/branches/main/snowflake/orchestration/full.sql;
+EXECUTE IMMEDIATE FROM @BTC_TRADING.ORCHESTRATION.DI_PIPE_ENG_REPO/branches/main/orchestration/delta.sql;
+EXECUTE IMMEDIATE FROM @BTC_TRADING.ORCHESTRATION.DI_PIPE_ENG_REPO/branches/main/orchestration/full.sql;
 
 
 -- 10. Keep all entry points suspended for manual execution.
