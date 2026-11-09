@@ -1,14 +1,14 @@
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path.cwd() / "databricks\\src"))
+sys.path.insert(0, str(Path.cwd() / "src"))
 from binance_downloader import BinanceTradeDownloader
 
 folder = Path(r"C:\Users\sara\Downloads\binance")
 
 downloader = BinanceTradeDownloader(
     start_date="03/11/2026",
-    end_date="03/11/2026",
+    end_date="06/11/2026",
     volume=str(folder),
 )
 
