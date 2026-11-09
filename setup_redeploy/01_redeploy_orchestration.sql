@@ -15,19 +15,19 @@ ALTER GIT REPOSITORY BTC_TRADING.ORCHESTRATION.DI_PIPE_ENG_REPO FETCH;
 
 -- 3. Deploy dbt definitions.
 ALTER DBT PROJECT BTC_TRADING.ORCHESTRATION.BINANCE
-    DEPLOY FROM '@BTC_TRADING.ORCHESTRATION.DI_PIPE_ENG_REPO/branches/main/snowflake';
+    DEPLOY FROM '@BTC_TRADING.ORCHESTRATION.DI_PIPE_ENG_REPO/branches/main';
 
 -- 4. Update the staged Bronze loader.
 COPY FILES
     INTO @BTC_TRADING.ORCHESTRATION.ETL_SCRIPTS/
-    FROM @BTC_TRADING.ORCHESTRATION.DI_PIPE_ENG_REPO/branches/main/snowflake/etl/
+    FROM @BTC_TRADING.ORCHESTRATION.DI_PIPE_ENG_REPO/branches/main/etl/
     FILES = ('bronze_btcusdt_trades_raw.sql')
     DETAILED_OUTPUT = TRUE;
 
 -- 5. Deploy quality procedures before deploying task graphs.
 -- Retained because recovery tasks may use its DATE-based procedures.
-EXECUTE IMMEDIATE FROM @BTC_TRADING.ORCHESTRATION.DI_PIPE_ENG_REPO/branches/main/snowflake/quality/dq_landing_scope.sql;
-EXECUTE IMMEDIATE FROM @BTC_TRADING.ORCHESTRATION.DI_PIPE_ENG_REPO/branches/main/snowflake/quality/dq_after_summary.sql;
+EXECUTE IMMEDIATE FROM @BTC_TRADING.ORCHESTRATION.DI_PIPE_ENG_REPO/branches/main/quality/dq_landing_scope.sql;
+EXECUTE IMMEDIATE FROM @BTC_TRADING.ORCHESTRATION.DI_PIPE_ENG_REPO/branches/main/quality/dq_after_summary.sql;
 
 
 -- dq_landing_delta.sql and dq_landing_full.sql are executed
@@ -36,8 +36,8 @@ EXECUTE IMMEDIATE FROM @BTC_TRADING.ORCHESTRATION.DI_PIPE_ENG_REPO/branches/main
 -- 6. Redeploy the DELTA and FULL task graphs.
 -- These files resume child tasks and leave roots suspended
 -- for manual execution.
-EXECUTE IMMEDIATE FROM @BTC_TRADING.ORCHESTRATION.DI_PIPE_ENG_REPO/branches/main/snowflake/orchestration/delta.sql;
-EXECUTE IMMEDIATE FROM @BTC_TRADING.ORCHESTRATION.DI_PIPE_ENG_REPO/branches/main/snowflake/orchestration/full.sql;
+EXECUTE IMMEDIATE FROM @BTC_TRADING.ORCHESTRATION.DI_PIPE_ENG_REPO/branches/main/orchestration/delta.sql;
+EXECUTE IMMEDIATE FROM @BTC_TRADING.ORCHESTRATION.DI_PIPE_ENG_REPO/branches/main/orchestration/full.sql;
 
 -- 7. Add the backfill/recovery deployment file here once identified.
 
