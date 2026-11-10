@@ -1,0 +1,96 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>modelling | Snowflake BTCUSDT</title><link rel="stylesheet" href="../assets/site.css"></head><body><main class="wrap article"><a class="back" href="../../index.html#docs">← Project documentation</a><h1>Data modelling and indicators</h1>
+<p>The design is a layered trade fact and daily aggregate model. It is not a dimensional star schema with separate date, asset or venue dimensions. Table names below are qualified under <code>BTC_TRADING</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Relation</th>
+<th>Grain / intended key</th>
+<th>Materialization and role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>BINANCE_BRONZE.BTCUSDT_TRADES_BRONZE</code></td>
+<td>One source trade record</td>
+<td>Raw string fields plus provenance; COPY from Parquet</td>
+</tr>
+<tr>
+<td><code>BINANCE_SILVER.BTCUSDT_TRADES</code></td>
+<td>One trade; logical identity <code>(symbol, trade_id)</code></td>
+<td>Incremental append; typed fields; file-level exclusion</td>
+</tr>
+<tr>
+<td><code>BINANCE_SILVER.BTCUSDT_DAILY_TRADE_SUMMARY</code></td>
+<td><code>(symbol, data)</code></td>
+<td>Incremental MERGE; one UTC-day aggregate</td>
+</tr>
+<tr>
+<td><code>BINANCE_GOLD.MART_BTCUSDT_SMA_50D</code></td>
+<td><code>(symbol, data)</code></td>
+<td>MERGE of closing price and SMA50</td>
+</tr>
+<tr>
+<td><code>BINANCE_GOLD.MART_BTCUSDT_SMA_200D</code></td>
+<td><code>(symbol, data)</code></td>
+<td>MERGE of closing price and SMA200</td>
+</tr>
+<tr>
+<td><code>BINANCE_GOLD.MART_BTCUSDT_CVD</code></td>
+<td><code>(symbol, data)</code></td>
+<td>MERGE of daily delta and cumulative BTC delta</td>
+</tr>
+<tr>
+<td><code>BINANCE_GOLD.MART_BTCUSDT_VWAP</code></td>
+<td><code>(symbol, data)</code></td>
+<td>MERGE of daily volumes and VWAP</td>
+</tr>
+</tbody>
+</table>
+<p>Logical keys describe intended grain. The supplied models do not enforce trade uniqueness: Silver uses append, not a trade-key MERGE. Existing filenames are excluded if any Silver row with that <code>source_file</code> exists.</p>
+<h2>Typed trade contract</h2>
+<p><code>trade_id</code> and <code>trade_time_us</code> become BIGINT; <code>price</code>, <code>quantity</code> and <code>quote_quantity</code> become DECIMAL(38,8). Boolean strings become BOOLEAN only for <code>true</code> and <code>false</code>. The epoch timestamp is interpreted at microsecond scale using <code>TO_TIMESTAMP_NTZ(..., 6)</code>; <code>trade_timestamp_utc</code> is a UTC value stored without a timezone. Invalid conversions can become NULL. <code>source_file</code> and <code>ingested_at</code> preserve provenance. These conversions are not a rejection/quarantine policy.</p>
+<h2>Daily aggregation</h2>
+<p>Partition by symbol and the UTC date of the trade timestamp. Opening and closing prices follow <code>(trade_time_us, trade_id)</code> ascending and descending respectively, making equal-time ordering deterministic when identifiers differ. Maximum/minimum are trade-price extremes; <code>preco_medio_simples</code> is the unweighted mean of trade prices.</p>
+<p><code>quantidade_trades</code> counts rows, <code>volume_total_btc</code> sums quantity and <code>volume_total_usdt</code> sums quote quantity. <code>is_buyer_maker = false</code> means buyer aggression; <code>true</code> means seller aggression. Buyer minus seller volume produces <code>delta_btc</code> and <code>delta_usdt</code>. The summary also stores aggressor counts, daily VWAP and percentage imbalance.</p>
+<p>On an incremental run, a day is recomputed only if its trade count differs from the stored summary count (or its summary is absent). This is not a checksum of all values. Trades with NULL timestamps are excluded from aggregation.</p>
+<h2>Gold products</h2>
+<table>
+<thead>
+<tr>
+<th>Mart</th>
+<th>Formula</th>
+<th>Incremental impact of a source change on D</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SMA50</td>
+<td>Mean of closes D−49 through D, only with 50 non-null closes</td>
+<td>D through D+49</td>
+</tr>
+<tr>
+<td>SMA200</td>
+<td>Mean of closes D−199 through D, only with 200 non-null closes</td>
+<td>D through D+199</td>
+</tr>
+<tr>
+<td>CVD</td>
+<td>Previous cumulative BTC delta + today's buyer-minus-seller BTC volume</td>
+<td>First changed day through all subsequent available days</td>
+</tr>
+<tr>
+<td>VWAP</td>
+<td>Daily USDT volume / daily BTC volume</td>
+<td>Changed day only</td>
+</tr>
+</tbody>
+</table>
+<p>SMA windows are calendar-day ranges, not simply the previous N rows. Incomplete windows yield NULL. Zero BTC volume yields NULL VWAP. CVD incrementally seeds from the preceding retained Gold value; a full rebuild starts at zero on the first available summary day.</p>
+<p>For example, 2 BTC bought aggressively at 80,000 USDT and 1 BTC sold aggressively at 83,000 produce 243,000 USDT of volume, a VWAP of 81,000 and delta of +1 BTC. If the previous CVD is 10 BTC, the next value is 11 BTC.</p>
+<p>Gold detects changes to its input fields, but it cannot detect a correction that Silver has not propagated. Source deletions are also not automatically removed from MERGE targets. See <a href="backfill.html">backfill</a>.</p>
+<h2>dbt implementation</h2>
+<p>I use <strong>dbt</strong> for the Silver and Gold SQL transformations. The supplied deployment screenshot shows project <code>BTC_TRADING.ORCHESTRATION.BINANCE</code> running dbt <strong>1.9.4</strong> from the repository’s <code>main</code> branch. See <a href="dbt.html">Working with dbt</a> for model design and deployment evidence.</p>
+<h2>Supplied execution evidence</h2>
+<h3>Gold products · ten-date preview</h3>
+<p>Query results show closing price, SMA50, SMA200, CVD and VWAP for ten dates through 2026-11-08. Values are rounded for display.</p>
+<p><img alt="Gold products · ten-date preview" src="../../img/demo-gold.png" /></p></main></body></html>

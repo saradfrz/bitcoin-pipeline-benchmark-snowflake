@@ -1,0 +1,137 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>business-pt | Snowflake BTCUSDT</title><link rel="stylesheet" href="../assets/site.css"></head><body><main class="wrap article"><a class="back" href="../../index.html#docs">← Project documentation</a><h1>BTCUSDT na Binance — das negociações aos indicadores diários</h1>
+<p>O projeto transforma as negociações de bitcoin por Tether (BTCUSDT) no mercado à vista da Binance em quatro indicadores diários. As médias móveis de 50 e 200 dias acompanham o preço de fechamento. O CVD acompanha o saldo acumulado entre compras e vendas agressoras. O VWAP mostra o preço médio pago por BTC, dando mais peso às negociações de maior volume.</p>
+<h2>Como os dados percorrem as camadas</h2>
+<table>
+<thead>
+<tr>
+<th>Etapa</th>
+<th>O que acontece</th>
+<th>O que cada registro representa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Entrada</td>
+<td>O arquivo diário da Binance chega à área de entrada em Parquet no stage do Snowflake.</td>
+<td>Um arquivo por dia do par BTCUSDT.</td>
+</tr>
+<tr>
+<td>Bronze · <code>binance_bronze.btcusdt_trades_bronze</code></td>
+<td>A carga preserva os valores recebidos e registra o arquivo de origem e o horário de ingestão.</td>
+<td>Uma negociação.</td>
+</tr>
+<tr>
+<td>Silver · <code>binance_silver.btcusdt_trades</code></td>
+<td>A transformação converte preços e quantidades em números, o horário da negociação em timestamp e os indicadores lógicos em booleanos.</td>
+<td>A mesma negociação, com tipos adequados para cálculo.</td>
+</tr>
+<tr>
+<td>Silver · <code>binance_silver.btcusdt_daily_trade_summary</code></td>
+<td>As negociações são agrupadas por par e pela data em que ocorreram, em UTC.</td>
+<td>Um resumo por par e dia.</td>
+</tr>
+<tr>
+<td>Gold · <code>binance_gold</code></td>
+<td>Quatro tabelas analíticas calculam os indicadores a partir do resumo Silver.</td>
+<td>Um resultado por par e dia em cada tabela.</td>
+</tr>
+</tbody>
+</table>
+<h3>O que entra no resumo Silver</h3>
+<p>A abertura é o preço da primeira negociação do dia e o fechamento é o da última, usando o identificador da negociação para desempatar horários iguais. A máxima e a mínima são o maior e o menor preço negociados. Para as médias móveis, a Gold usa apenas o <strong>fechamento</strong> de cada dia.</p>
+<table>
+<thead>
+<tr>
+<th>Medida diária</th>
+<th>Cálculo sobre as negociações do dia</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Quantidade de negociações</td>
+<td>Contagem das linhas de BTCUSDT.</td>
+</tr>
+<tr>
+<td>Volume total em BTC</td>
+<td>Soma de <code>quantity</code>, a quantidade de bitcoin de cada negociação.</td>
+</tr>
+<tr>
+<td>Volume total em USDT</td>
+<td>Soma de <code>quote_quantity</code>, o valor financeiro de cada negociação (preço × quantidade).</td>
+</tr>
+<tr>
+<td>Volume de compra agressora em BTC</td>
+<td>Soma de <code>quantity</code> quando <code>is_buyer_maker = false</code>. O comprador aceitou uma oferta de venda que já estava no livro.</td>
+</tr>
+<tr>
+<td>Volume de venda agressora em BTC</td>
+<td>Soma de <code>quantity</code> quando <code>is_buyer_maker = true</code>. O vendedor aceitou uma oferta de compra que já estava no livro.</td>
+</tr>
+<tr>
+<td>Saldo diário em BTC (<code>delta_btc</code>)</td>
+<td>Volume de compra agressora − volume de venda agressora.</td>
+</tr>
+</tbody>
+</table>
+<h2>Como a Gold calcula os indicadores</h2>
+<p>Nas fórmulas, <strong>D</strong> é a data do indicador. As janelas das médias móveis incluem o próprio dia D.</p>
+<table>
+<thead>
+<tr>
+<th>Indicador e tabela em <code>binance_gold</code></th>
+<th>Fórmula</th>
+<th>Como ler o resultado</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>MM50 · <code>mart_btcusdt_sma_50d</code></td>
+<td>Soma dos fechamentos de D−49 até D ÷ 50</td>
+<td>Preço médio de fechamento dos últimos 50 dias, em USDT por BTC.</td>
+</tr>
+<tr>
+<td>MM200 · <code>mart_btcusdt_sma_200d</code></td>
+<td>Soma dos fechamentos de D−199 até D ÷ 200</td>
+<td>Referência de preço de prazo mais longo. Cada novo fechamento tem menos peso do que na MM50.</td>
+</tr>
+<tr>
+<td>CVD · <code>mart_btcusdt_cvd</code></td>
+<td>CVD do dia anterior + <code>delta_btc</code> do dia D</td>
+<td>Saldo acumulado em BTC desde o início do histórico, com saldo inicial zero. Se o CVD sobe, o volume de compra agressora superou o de venda agressora naquele dia.</td>
+</tr>
+<tr>
+<td>VWAP diário · <code>mart_btcusdt_vwap</code></td>
+<td><code>volume_total_usdt ÷ volume_total_btc</code> no dia D</td>
+<td>Preço médio negociado em USDT por BTC, ponderado pela quantidade. O cálculo recomeça a cada dia.</td>
+</tr>
+</tbody>
+</table>
+<p>A MM50 e a MM200 ficam nulas até haver, respectivamente, 50 e 200 fechamentos na janela. O VWAP fica nulo se o volume total em BTC for zero.</p>
+<p><strong>Exemplo com duas negociações no mesmo dia.</strong> Uma compra agressora de 2 BTC a 80.000 USDT por BTC e uma venda agressora de 1 BTC a 83.000 movimentam 3 BTC e 243.000 USDT. O <strong>VWAP é 81.000 USDT por BTC</strong> (243.000 ÷ 3). Já o <strong>saldo do dia é +1 BTC</strong> (2 − 1). Se o CVD anterior era 10 BTC, o novo acumulado é 11 BTC.</p>
+<h2>Carga completa, incremental e qualidade</h2>
+<p>A carga <strong>completa</strong> reconstrói o histórico a partir dos arquivos do período. A carga <strong>incremental</strong> incorpora os arquivos novos. Quando uma correção chega ao resumo Silver, o alcance do recálculo na Gold depende da fórmula.</p>
+<table>
+<thead>
+<tr>
+<th>Se mudar um dado do dia D</th>
+<th>Quais resultados podem mudar</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Preço de fechamento</td>
+<td>MM50 de D até D+49 e MM200 de D até D+199, para as datas já presentes no resumo.</td>
+</tr>
+<tr>
+<td>Saldo diário em BTC</td>
+<td>CVD de D em diante, pois todos os acumulados seguintes incluem esse saldo.</td>
+</tr>
+<tr>
+<td>Volume total em BTC ou em USDT</td>
+<td>VWAP apenas do dia D.</td>
+</tr>
+</tbody>
+</table>
+<p>No Snowflake deste repositório, a raiz valida nomes, datas, duplicidades e continuidade entre a primeira e a última data encontrada na landing. Esse controle ocorre antes do reset da full, mas não detecta a ausência de uma extremidade esperada que não foi configurada independentemente. Depois da construção do resumo, <code>DQ_AFTER_SUMMARY</code> exige uma linha BTCUSDT por dia: da primeira data da landing até a última na full, ou até ontem em UTC na delta. Não há <code>DQ_BEFORE_SUMMARY</code>, baseline obrigatório nem reconciliação de contagens dentro dessa procedure.</p>
+<p>A delta normal recompõe resumos ausentes ou com contagem diferente a partir da Silver. Correções de valores que preservem a contagem não são detectadas por esse mecanismo. Exclusões parciais de arquivos já presentes na Silver exigem reparação explícita ou full. Para demonstrar a falha, chame DQ depois de apagar o resumo e antes de iniciar a delta, pois ela pode reparar o dia antes da validação do grafo. Consulte <a href="backfill.html">backfill</a> e <a href="source_reconciliation.html">reconciliação das fontes</a>.</p>
+<p><strong>Fonte dos dados</strong> · <a href="https://data.binance.vision/?prefix=data/spot/daily/trades/BTCUSDT/">Arquivos diários de negociações BTCUSDT da Binance</a></p></main></body></html>

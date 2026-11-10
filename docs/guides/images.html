@@ -1,0 +1,45 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>images | Snowflake BTCUSDT</title><link rel="stylesheet" href="../assets/site.css"></head><body><main class="wrap article"><a class="back" href="../../index.html#docs">← Project documentation</a><h1>Image inventory</h1>
+<p>All eight supplied PNGs are included in the page using their original filenames under the repository-root <code>img/</code> directory. No image is pending for this delivery.</p>
+<table>
+<thead>
+<tr>
+<th>Filename</th>
+<th>What it shows</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>dbt-project.png</code></td>
+<td>Project BTC_TRADING.ORCHESTRATION.BINANCE uses dbt 1.9.4, the main Git branch and the Snowflake target.</td>
+</tr>
+<tr>
+<td><code>snowflake-data-lineage.png</code></td>
+<td>The dbt DAG connects the Bronze source to Silver trades, the daily summary and four Gold models.</td>
+</tr>
+<tr>
+<td><code>snowflake-full-pipeline.png</code></td>
+<td>The supplied task history shows all ten FULL tasks succeeded, including reset, Bronze, Silver, summary DQ and the four Gold branches.</td>
+</tr>
+<tr>
+<td><code>snowflake-delta-pipeline.png</code></td>
+<td>All ten DELTA tasks succeeded in the supplied run, ending with DELTA_PRUNE_366_DAYS.</td>
+</tr>
+<tr>
+<td><code>snowflake-quality-failure.png</code></td>
+<td>A direct call to DQ_AFTER_SUMMARY raises BAD_SUMMARY after the controlled removal of a summary row. This is a procedure test, not a failed Task graph.</td>
+</tr>
+<tr>
+<td><code>snowflake-backfill-recovered.png</code></td>
+<td>The worksheet shows ROLLBACK followed by the restored BTCUSDT row for 2026-11-08 with 1,132,641 trades. This capture demonstrates restoration after rollback; DELTA backfill is a separate workflow.</td>
+</tr>
+<tr>
+<td><code>demo-gold.png</code></td>
+<td>Query results show closing price, SMA50, SMA200, CVD and VWAP for ten dates through 2026-11-08. Values are rounded for display.</td>
+</tr>
+<tr>
+<td><code>snowflake-count-rows.png</code></td>
+<td>Bronze and Silver trades each contain 1,107,431,071 rows. The daily summary and each of the four Gold marts contain 312 rows. Counts do not establish value-by-value equality.</td>
+</tr>
+</tbody>
+</table>
+<p>The older requested names <code>snowflake-gold-preview.png</code> and <code>snowflake-data-coverage.png</code> correspond here to the supplied <code>demo-gold.png</code> and <code>snowflake-count-rows.png</code>. The latter shows row counts, not a complete date-coverage check. No separate cost/credit screenshot was supplied.</p></main></body></html>

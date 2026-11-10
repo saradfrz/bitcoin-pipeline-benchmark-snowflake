@@ -1,0 +1,65 @@
+<?xml version='1.0' encoding='utf-8'?>
+<mxfile host="app.diagrams.net" version="24.7.17">
+  <diagram name="01 / From trade records to daily products" id="01-lineage">
+    <mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" page="1" pageWidth="1400" pageHeight="900" background="#0d0c10">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" value="01 / From trade records to daily products" style="text;html=0;strokeColor=none;fillColor=none;fontColor=#ff2bd6;fontSize=30;fontStyle=1;align=left;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="45" y="22" width="1310" height="52" as="geometry" />
+        </mxCell>
+        <mxCell id="subtitle" value="Snowflake table lineage · all relations under BTC_TRADING · intended keys, not enforced uniqueness" style="text;html=0;strokeColor=none;fillColor=none;fontColor=#c0c5d5;fontSize=17;fontStyle=1;align=left;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="45" y="77" width="1310" height="46" as="geometry" />
+        </mxCell>
+        <mxCell id="stage" value="LANDING_ZONE&#10;Daily BTCUSDT Parquet archives" style="rounded=1;whiteSpace=wrap;html=0;fillColor=#18151e;strokeColor=#706579;fontColor=#ebe9ef;fontSize=19;fontStyle=1;align=center;verticalAlign=middle;spacing=12;" vertex="1" parent="1">
+          <mxGeometry x="430" y="150" width="540" height="75" as="geometry" />
+        </mxCell>
+        <mxCell id="bronze" value="BINANCE_BRONZE.BTCUSDT_TRADES_BRONZE&#10;Raw trade values + source_file + ingested_at" style="rounded=1;whiteSpace=wrap;html=0;fillColor=#382518;strokeColor=#dba26b;fontColor=#ebe9ef;fontSize=17;fontStyle=1;align=center;verticalAlign=middle;spacing=12;" vertex="1" parent="1">
+          <mxGeometry x="430" y="265" width="540" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="trades" value="BINANCE_SILVER.BTCUSDT_TRADES&#10;One typed trade · UTC microseconds" style="rounded=1;whiteSpace=wrap;html=0;fillColor=#252633;strokeColor=#c0c5d5;fontColor=#ebe9ef;fontSize=18;fontStyle=1;align=center;verticalAlign=middle;spacing=12;" vertex="1" parent="1">
+          <mxGeometry x="430" y="385" width="540" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="summary" value="BTCUSDT_DAILY_TRADE_SUMMARY&#10;One row / symbol / UTC day · OHLC + volumes" style="rounded=1;whiteSpace=wrap;html=0;fillColor=#252633;strokeColor=#c0c5d5;fontColor=#ebe9ef;fontSize=18;fontStyle=1;align=center;verticalAlign=middle;spacing=12;" vertex="1" parent="1">
+          <mxGeometry x="430" y="505" width="540" height="85" as="geometry" />
+        </mxCell>
+        <mxCell id="s50" value="MART_BTCUSDT_SMA_50D&#10;50-day closing mean" style="rounded=1;whiteSpace=wrap;html=0;fillColor=#352d13;strokeColor=#e8c568;fontColor=#ebe9ef;fontSize=17;fontStyle=1;align=center;verticalAlign=middle;spacing=12;" vertex="1" parent="1">
+          <mxGeometry x="40" y="660" width="310" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="s200" value="MART_BTCUSDT_SMA_200D&#10;200-day closing mean" style="rounded=1;whiteSpace=wrap;html=0;fillColor=#352d13;strokeColor=#e8c568;fontColor=#ebe9ef;fontSize=17;fontStyle=1;align=center;verticalAlign=middle;spacing=12;" vertex="1" parent="1">
+          <mxGeometry x="375" y="660" width="310" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="cvd" value="MART_BTCUSDT_CVD&#10;Cumulative BTC delta" style="rounded=1;whiteSpace=wrap;html=0;fillColor=#352d13;strokeColor=#e8c568;fontColor=#ebe9ef;fontSize=17;fontStyle=1;align=center;verticalAlign=middle;spacing=12;" vertex="1" parent="1">
+          <mxGeometry x="710" y="660" width="310" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="vwap" value="MART_BTCUSDT_VWAP&#10;Daily USDT / BTC" style="rounded=1;whiteSpace=wrap;html=0;fillColor=#352d13;strokeColor=#e8c568;fontColor=#ebe9ef;fontSize=17;fontStyle=1;align=center;verticalAlign=middle;spacing=12;" vertex="1" parent="1">
+          <mxGeometry x="1045" y="660" width="310" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="note" value="Gold reads the daily summary; it does not reaggregate the raw trade history." style="rounded=1;whiteSpace=wrap;html=0;fillColor=#18151e;strokeColor=#706579;fontColor=#ebe9ef;fontSize=18;fontStyle=1;align=center;verticalAlign=middle;spacing=12;" vertex="1" parent="1">
+          <mxGeometry x="210" y="795" width="980" height="62" as="geometry" />
+        </mxCell>
+        <mxCell id="e0" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=0;strokeColor=#90849d;strokeWidth=2;endArrow=block;endFill=1;" edge="1" parent="1" source="stage" target="bronze">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=0;strokeColor=#90849d;strokeWidth=2;endArrow=block;endFill=1;" edge="1" parent="1" source="bronze" target="trades">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=0;strokeColor=#90849d;strokeWidth=2;endArrow=block;endFill=1;" edge="1" parent="1" source="trades" target="summary">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=0;strokeColor=#90849d;strokeWidth=2;endArrow=block;endFill=1;" edge="1" parent="1" source="summary" target="s50">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e4" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=0;strokeColor=#90849d;strokeWidth=2;endArrow=block;endFill=1;" edge="1" parent="1" source="summary" target="s200">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e5" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=0;strokeColor=#90849d;strokeWidth=2;endArrow=block;endFill=1;" edge="1" parent="1" source="summary" target="cvd">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e6" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=0;strokeColor=#90849d;strokeWidth=2;endArrow=block;endFill=1;" edge="1" parent="1" source="summary" target="vwap">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

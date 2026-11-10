@@ -6,7 +6,7 @@ O projeto transforma as negociações de bitcoin por Tether (BTCUSDT) no mercado
 
 | Etapa | O que acontece | O que cada registro representa |
 |---|---|---|
-| Entrada | O arquivo diário da Binance chega à área de entrada em CSV no Databricks e em Parquet no Snowflake. | Um arquivo por dia do par BTCUSDT. |
+| Entrada | O arquivo diário da Binance chega à área de entrada em Parquet no stage do Snowflake. | Um arquivo por dia do par BTCUSDT. |
 | Bronze · `binance_bronze.btcusdt_trades_bronze` | A carga preserva os valores recebidos e registra o arquivo de origem e o horário de ingestão. | Uma negociação. |
 | Silver · `binance_silver.btcusdt_trades` | A transformação converte preços e quantidades em números, o horário da negociação em timestamp e os indicadores lógicos em booleanos. | A mesma negociação, com tipos adequados para cálculo. |
 | Silver · `binance_silver.btcusdt_daily_trade_summary` | As negociações são agrupadas por par e pela data em que ocorreram, em UTC. | Um resumo por par e dia. |
@@ -50,8 +50,8 @@ A carga **completa** reconstrói o histórico a partir dos arquivos do período.
 | Saldo diário em BTC | CVD de D em diante, pois todos os acumulados seguintes incluem esse saldo. |
 | Volume total em BTC ou em USDT | VWAP apenas do dia D. |
 
-No Snowflake, o primeiro controle verifica os arquivos esperados antes da carga. Assim, um arquivo ausente interrompe a carga completa antes de esvaziar as tabelas. O segundo verifica se há negociações nos dias esperados e, na carga incremental, se cada dia já validado continua com uma única linha no resumo. O terceiro compara o resumo reconstruído com as negociações Silver, conferindo a presença de uma linha por dia e a contagem de negociações antes de liberar a Gold.
+No Snowflake deste repositório, a raiz valida nomes, datas, duplicidades e continuidade entre a primeira e a última data encontrada na landing. Esse controle ocorre antes do reset da full, mas não detecta a ausência de uma extremidade esperada que não foi configurada independentemente. Depois da construção do resumo, `DQ_AFTER_SUMMARY` exige uma linha BTCUSDT por dia: da primeira data da landing até a última na full, ou até ontem em UTC na delta. Não há `DQ_BEFORE_SUMMARY`, baseline obrigatório nem reconciliação de contagens dentro dessa procedure.
 
-Se faltar um dia já validado no resumo, a recuperação pode reconstruir esse dia ou um intervalo a partir das negociações Silver. Há também um fluxo para reconstruir o resumo inteiro, validá-lo e recalcular os quatro indicadores.
+A delta normal recompõe resumos ausentes ou com contagem diferente a partir da Silver. Correções de valores que preservem a contagem não são detectadas por esse mecanismo. Exclusões parciais de arquivos já presentes na Silver exigem reparação explícita ou full. Para demonstrar a falha, chame DQ depois de apagar o resumo e antes de iniciar a delta, pois ela pode reparar o dia antes da validação do grafo. Consulte [backfill](backfill.md) e [reconciliação das fontes](source_reconciliation.md).
 
 **Fonte dos dados** · [Arquivos diários de negociações BTCUSDT da Binance](https://data.binance.vision/?prefix=data/spot/daily/trades/BTCUSDT/)

@@ -1,0 +1,64 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>source_reconciliation | Snowflake BTCUSDT</title><link rel="stylesheet" href="../assets/site.css"></head><body><main class="wrap article"><a class="back" href="../../index.html#docs">← Project documentation</a><h1>Source reconciliation · 9 November 2026</h1>
+<p>This documentation uses the supplied Snowflake ZIP for executable behavior and the final PDF for experiment observations. Neither is assumed to represent a live deployment. The original report remains a separate reference and is not bundled with this Snowflake-only package.</p>
+<table>
+<thead>
+<tr>
+<th>Topic</th>
+<th>Report / older prose</th>
+<th>Supplied SQL</th>
+<th>Documentation decision</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Landing DQ</td>
+<td>PDF §§4.3/4.6 says removed</td>
+<td>Both roots call <code>dq_landing_*</code>, which invokes <code>DQ_LANDING_SCOPE</code></td>
+<td>Show landing DQ in Snowflake diagrams and instructions</td>
+</tr>
+<tr>
+<td>Pre-summary DQ</td>
+<td>Old guide describes a baseline gate</td>
+<td>No such task in either graph</td>
+<td>Remove the obsolete operational instructions</td>
+</tr>
+<tr>
+<td>Baseline table</td>
+<td>PDF mentions auxiliary audit inventory</td>
+<td>No baseline dependency in supplied procedures</td>
+<td>Do not draw it as required or claim it is updated</td>
+</tr>
+<tr>
+<td>Summary DQ</td>
+<td>Old guide promises trade-count reconciliation</td>
+<td>Procedure checks daily row coverage only</td>
+<td>State the narrower implemented guarantee</td>
+</tr>
+<tr>
+<td>Recovery graphs</td>
+<td>Old guide names separate recovery tasks</td>
+<td>Current recovery demo uses ordinary DELTA</td>
+<td>Document the existing DELTA demo</td>
+</tr>
+<tr>
+<td>Retention</td>
+<td>Report proposes 90 days + cold storage</td>
+<td>Executable pruning uses 366 days</td>
+<td>Separate proposal from implementation</td>
+</tr>
+<tr>
+<td>Paths</td>
+<td>Old retention guide uses <code>/snowflake/</code></td>
+<td>Deployment reads repository-root paths</td>
+<td>Correct the documentation paths</td>
+</tr>
+<tr>
+<td>Scope</td>
+<td>Old examples use <code>USING CONFIG</code></td>
+<td>Roots derive dates from stage / UTC today</td>
+<td>Do not imply runtime custom-date filtering</td>
+</tr>
+</tbody>
+</table>
+<p>The diagrams cover Snowflake table lineage, orchestration, repository responsibilities and ingestion. They reflect the attached source.</p>
+<p>The processing implementation is unchanged. A standalone screenshot demonstration has been added under <code>debug_sql/demo/</code>; it is not part of either task graph.</p></main></body></html>

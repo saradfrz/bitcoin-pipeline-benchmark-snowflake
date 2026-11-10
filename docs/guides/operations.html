@@ -1,0 +1,81 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="../assets/site.css"><title>Operation | Snowflake</title></head><body><main class="wrap article"><a class="back" href="../../index.html#docs">← Project documentation</a><h1>Bitcoin pipeline benchmark · Snowflake</h1>
+<p>A daily batch pipeline that turns Binance Spot BTCUSDT trade archives into typed trades, daily OHLC and volume summaries, and four analytical marts. Snowflake Tasks orchestrate SQL ingestion and dbt transformations. This repository contains only the Snowflake implementation.</p>
+<p><strong>Start here:</strong> <a href="../../index.html">Project landing page</a> · <a href="../../deploy_github_pages.md">Deployment to GitHub Pages</a> · <a href="../architecture.md">Architecture</a> · <a href="../modelling.md">Modelling</a> · <a href="../quality_checks.md">Quality</a> · <a href="../backfill.md">Backfill</a></p>
+<h2>Source and scope</h2>
+<p>Documentation reviewed on 9 November 2026 against the supplied repository and final report. Implementation details follow this repository's SQL. Report observations are historical, with data through 6 November 2026; they are not live telemetry. See <a href="../source_reconciliation.md">source reconciliation</a> for differences between the report and code. The original report is a separate reference and is not bundled with this Snowflake website.</p>
+<h2>Initial setup</h2>
+<ol>
+<li>Fork or clone <code>https://github.com/saradfrz/bitcoin-pipeline-benchmark-snowflake</code>. Keep this repository's files at its root: deployment paths do <strong>not</strong> include a <code>snowflake/</code> prefix.</li>
+<li>In Snowflake, use a role authorized to create the database, schemas, stage, tasks, procedures and dbt project. Make <code>SNOWFLAKE_LEARNING_WH</code> available. Administrative privileges were used in the prototype; production roles are still a proposal.</li>
+<li>Run <code>setup_init/01_create_namespaces.sql</code>, <code>02_create_bronze_layer.sql</code>, <code>03_create_silver_layer.sql</code>, then <code>04_create_gold_layer.sql</code> in order.</li>
+<li>Configure an authorized Git API integration for your repository. In <code>setup_init/05_deploy_orchestration.sql</code>, review <code>API_INTEGRATION = "Snowflake"</code> (quoted, case-sensitive name) and <code>ORIGIN</code>. The integration must exist and allow that origin. <code>IF NOT EXISTS</code> will not update an already-created repository's origin.</li>
+<li>Commit/push the repository, then run <code>setup_init/05_deploy_orchestration.sql</code>. It fetches Git, creates/deploys dbt, stages the Bronze loader, deploys quality procedures and both task graphs. Child tasks are resumed; roots remain manual.</li>
+<li>Inspect <code>SHOW TASKS IN SCHEMA BTC_TRADING.ORCHESTRATION;</code> and <code>SHOW DBT PROJECTS IN SCHEMA BTC_TRADING.ORCHESTRATION;</code>.</li>
+</ol>
+<p>The root <code>setup.sql</code> is not the complete installer. Use the ordered scripts above.</p>
+<h2>Prepare the landing data</h2>
+<p>From the repository root, install the downloader's dependencies (<code>python -m pip install requests pandas pyarrow</code>). Edit <code>local/download_files_locally.py</code>: set a real output folder and inclusive dates in <strong>DD/MM/YYYY</strong>. Choose completed UTC dates with published archives; do not keep its example end date unchanged. Run <code>python local/download_files_locally.py</code>.</p>
+<p>The downloader obtains ZIP archives from <code>data.binance.vision</code>, extracts CSVs and converts them to Parquet. Upload files from its <code>parquet</code> folder into <code>@BTC_TRADING.BINANCE_BRONZE.LANDING_ZONE</code> using your supported stage-upload method. Expected filenames are <code>BTCUSDT-trades-YYYY-MM-DD.parquet</code>, one per UTC day. Data files stay outside Git.</p>
+<h2>Operate</h2>
+<p>Run one graph at a time and wait for all descendants to finish:</p>
+<pre><code class="language-sql">-- Initial historical load or intentional rebuild; resets existing tables.
+EXECUTE TASK BTC_TRADING.ORCHESTRATION.BINANCE_BITCOIN_FULL;
+-- Daily processing after uploading new archives.
+EXECUTE TASK BTC_TRADING.ORCHESTRATION.BINANCE_BITCOIN_DELTA;
+</code></pre>
+<p>FULL validates summary coverage from the first to the last landing date. DELTA expects summary coverage from the first landing date through <strong>yesterday in UTC</strong>, so upload through yesterday before starting it. The roots derive scope themselves: <code>USING CONFIG</code> dates do not restrict these graphs. An arbitrary historical slice is not an implemented runtime option.</p>
+<p>FULL resets Bronze, Silver trades and summary, plus listed SMA/intermediate tables; Gold models then use <code>--full-refresh</code>. This is not an atomic swap: downstream failure can leave a partially refreshed dataset, including old CVD/VWAP until their builds run. DELTA loads new files, repairs count-different/missing summary dates, updates Gold and prunes data older than 366 days after all four marts succeed.</p>
+<p>Use <code>debug_sql/test.sql</code>, <code>pipeline_evaluation/data.sql</code> and <code>pipeline_evaluation/costs.sql</code> to inspect the result. <code>EXECUTE TASK</code> returns before the graph completes; root success alone does not prove Gold success.</p>
+<h2>Update code</h2>
+<p>Commit and push, wait for active graphs to finish, then run <code>setup_redeploy/01_redeploy_orchestration.sql</code>. Fetch alone does not deploy dbt or copy the Bronze script to its execution stage. The redeploy file's comment about adding a recovery graph is obsolete: ordinary DELTA performs supported summary backfill.</p>
+<h2>Documentation and website</h2>
+<p>The root <code>index.html</code> presents the Snowflake and dbt project. It uses the eight supplied screenshots at <code>img/&lt;original-filename&gt;.png</code>; CSS and diagram previews are embedded in the HTML. Readable companion guides and downloadable diagram sources are in <code>docs/</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Repository destination</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>index.html</code></td>
+<td>Repository root</td>
+</tr>
+<tr>
+<td>Contents of <code>docs.zip</code></td>
+<td>Extract at repository root; creates <code>docs/</code> and <code>.nojekyll</code></td>
+</tr>
+<tr>
+<td><code>README.md</code></td>
+<td>Repository root</td>
+</tr>
+<tr>
+<td><code>deploy_github_pages.md</code></td>
+<td>Repository root</td>
+</tr>
+<tr>
+<td>Your eight PNG images</td>
+<td><code>img/</code> at repository root, preserving filenames</td>
+</tr>
+</tbody>
+</table>
+<p>GitHub Pages must publish <strong>main / (root)</strong> so the root <code>img/</code> directory is served. See <a href="../../deploy_github_pages.md">deployment instructions</a>. Preview from the repository root with <code>python -m http.server 8000</code>, then open <code>http://localhost:8000</code>.</p>
+<ul>
+<li><a href="../architecture.md">Architecture</a></li>
+<li><a href="../dbt.md">Working with dbt</a></li>
+<li><a href="../modelling.md">Modelling</a></li>
+<li><a href="../quality_checks.md">Quality checks</a></li>
+<li><a href="../backfill.md">Backfill and recovery</a></li>
+<li><a href="../prune_366.md">Retention</a></li>
+<li><a href="../benchmark.md">Execution evidence</a></li>
+<li><a href="../image_checklist.md">Image inventory</a></li>
+<li><a href="../diagrams.md">Editable diagrams</a></li>
+</ul>
+<h2>dbt implementation</h2>
+<p>I use <strong>dbt</strong> for the Silver and Gold SQL transformations. The deployed project <code>BTC_TRADING.ORCHESTRATION.BINANCE</code> uses dbt <strong>1.9.4</strong>, sourced from the <code>main</code> branch, with profile <code>binance</code>, target <code>snowflake</code> and warehouse <code>SNOWFLAKE_LEARNING_WH</code>. Snowflake Tasks orchestrate dbt builds alongside COPY ingestion, summary DQ and retention.</p>
+<p><img alt="dbt project" src="../../img/dbt-project.png" /></p>
+<h2>Captured results</h2>
+<p>The supplied screenshots show 1,107,431,071 rows in both Bronze and Silver trades and 312 rows in the daily summary and each Gold mart. Both FULL and DELTA captures show all ten tasks succeeded. These are captured observations, not live metrics or proof of value-by-value reconciliation.</p>
+<p><img alt="Gold preview" src="../../img/demo-gold.png" /></p>
+<p>The image <code>snowflake-backfill-recovered.png</code> shows the row restored after <strong>ROLLBACK</strong> in the screenshot demo; it is not evidence of a DELTA backfill run. See the backfill guide for the separate recovery procedure.</p></main></body></html>

@@ -1,0 +1,49 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>deploy | Snowflake BTCUSDT</title><link rel="stylesheet" href="../assets/site.css"></head><body><main class="wrap article"><a class="back" href="../../index.html#docs">← Project documentation</a><h1>Deploy to GitHub Pages</h1>
+<h2>Place the downloads</h2>
+<p>Put <code>index.html</code>, <code>README.md</code> and this <code>deploy_github_pages.md</code> at the repository root. Extract <code>docs.zip</code> at that same root: it contains <code>docs/</code> and an empty <code>.nojekyll</code> file. Keep your eight PNG files in the root <code>img/</code> directory, with their original names.</p>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Location</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Landing page</td>
+<td><code>index.html</code></td>
+</tr>
+<tr>
+<td>Screenshots</td>
+<td><code>img/*.png</code></td>
+</tr>
+<tr>
+<td>Markdown documentation</td>
+<td><code>docs/*.md</code></td>
+</tr>
+<tr>
+<td>Readable HTML guides</td>
+<td><code>docs/guides/*.html</code></td>
+</tr>
+<tr>
+<td>Editable diagrams and exports</td>
+<td><code>docs/assets/diagrams/</code></td>
+</tr>
+</tbody>
+</table>
+<p>The landing page embeds its CSS and vector diagram previews. It references screenshots using <code>img/filename.png</code>, and companion guides using <code>docs/guides/</code>. Downloadable diagram sources remain in <code>docs/assets/diagrams/</code>. There is no framework build.</p>
+<h2>Publish</h2>
+<ol>
+<li>Commit and push these files to <code>main</code> in your GitHub repository.</li>
+<li>Open <strong>Settings → Pages</strong>.</li>
+<li>Set Source to <strong>Deploy from a branch</strong>.</li>
+<li>Select <strong>main</strong> and <strong>/(root)</strong>, then save.</li>
+<li>Wait for the Pages deployment to succeed and open the URL shown by GitHub.</li>
+</ol>
+<p>Use <strong>/(root)</strong> rather than the former <code>/docs</code> configuration: Pages needs to serve both <code>index.html</code> and the root <code>img/</code> folder. For the original repository, the expected URL is <code>https://saradfrz.github.io/bitcoin-pipeline-benchmark-snowflake/</code>. Use your own owner/repository path for a fork. This delivery prepares files; it does not publish them.</p>
+<h2>Preview</h2>
+<p>From the repository root run <code>python -m http.server 8000</code> and open <code>http://localhost:8000</code>. Check the eight screenshots, mobile layout, guide links and SVG/PNG/draw.io downloads. Clicking screenshots opens the originals for zooming. Keep filenames and case exactly as supplied.</p>
+<h2>Update</h2>
+<p>Replace images in <code>img/</code>, update their captions if the evidence changes, then commit and push. The HTML and guide metrics are static snapshots; they do not query Snowflake. If maintaining Markdown and HTML companions manually, update both.</p>
+<p>For 404s, confirm <code>main / (root)</code>, an exact lowercase <code>index.html</code>, a successful deployment, and that <code>img/</code> and <code>docs/</code> were committed. Refresh cached pages after a successful deployment.</p>
+<p>Official reference: https://docs.github.com/en/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site</p></main></body></html>

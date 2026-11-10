@@ -1,0 +1,18 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>dbt | Snowflake BTCUSDT</title><link rel="stylesheet" href="../assets/site.css"></head><body><main class="wrap article"><a class="back" href="../../index.html#docs">← Project documentation</a><h1>Working with dbt in Snowflake</h1>
+<p>I use <strong>dbt</strong> to implement the SQL transformations in the Silver and Gold layers of this BTCUSDT pipeline. Bronze ingestion uses COPY INTO; Snowflake Tasks coordinate dbt execution with ingestion, the summary quality gate and retention.</p>
+<h2>Deployment evidence</h2>
+<p>The supplied <code>dbt-project.png</code> shows a Snowflake object of type <strong>dbt project</strong>, named <code>BTC_TRADING.ORCHESTRATION.BINANCE</code>, using <strong>dbt 1.9.4</strong>. Its definition points to <code>@BTC_TRADING.ORCHESTRATION.DI_PIPE_ENG_REPO/branches/main</code>. The visible profile is <code>binance</code>, with target <code>snowflake</code>, database <code>BTC_TRADING</code> and warehouse <code>SNOWFLAKE_LEARNING_WH</code>. Project creation and update dates are 9 November 2026. The displayed owner/profile role is ACCOUNTADMIN, reflecting the prototype deployment rather than implemented role separation.</p>
+<p><img alt="dbt project deployed in Snowflake" src="../../img/dbt-project.png" /></p>
+<p>This screenshot is evidence of deployment configuration. It does not establish that every model or task completed successfully; use the run history for execution evidence.</p>
+<h2>What dbt does in this repository</h2>
+<ul>
+<li><code>dbt_project.yml</code> declares SQL model paths <code>etl/silver</code> and <code>etl/gold</code>, and the <code>macros</code> folder.</li>
+<li><code>source()</code> connects Silver trades to Bronze; <code>ref()</code> declares dependencies from trades to summary and from summary to Gold.</li>
+<li>Silver trades use incremental append with file-level exclusion. The daily summary uses incremental MERGE by symbol and date.</li>
+<li>Gold models use incremental MERGE and calculate the affected dates for SMA50, SMA200, CVD and VWAP. FULL tasks invoke Gold with <code>--full-refresh</code>.</li>
+<li><code>etl/silver/sources.yml</code> declares a not-null test for Bronze <code>source_file</code>. The separate SQL summary quality procedure checks daily coverage; it is not a dbt model test.</li>
+<li>Snowflake Tasks invoke <code>EXECUTE DBT PROJECT BTC_TRADING.ORCHESTRATION.BINANCE ARGS = 'build ...'</code>. Git fetch and dbt deployment are explicit operational steps.</li>
+</ul>
+<p>The screenshot pins dbt 1.9.4 in its CREATE definition. The supplied initial setup SQL does not explicitly pin that version; the image documents the observed deployment, not a version guarantee for every fresh setup.</p>
+<h2>Gold preview screenshot</h2>
+<p>Run <code>debug_sql/demo/preview_gold.sql</code> after all four Gold tasks succeed. It joins the four marts over their ten latest distinct BTCUSDT dates, shows the closing price, SMA50, SMA200, CVD and VWAP, and rounds values only for readability. Save the result grid with column headers as <code>snowflake-gold-preview.png</code>. NULL values can represent incomplete SMA windows or missing mart rows; this is a display query, not a quality certification.</p></main></body></html>

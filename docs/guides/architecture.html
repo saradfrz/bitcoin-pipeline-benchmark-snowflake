@@ -1,0 +1,31 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>architecture | Snowflake BTCUSDT</title><link rel="stylesheet" href="../assets/site.css"></head><body><main class="wrap article"><a class="back" href="../../index.html#docs">← Project documentation</a><h1>Architecture</h1>
+<h2>What the pipeline does</h2>
+<p>BTCUSDT identifies Bitcoin traded against USDT on Binance Spot. These are exchange executions, not blockchain transactions. Public daily archives support historical analysis. Processing is daily batch with UTC dates; it is not a live market feed.</p>
+<p><img alt="Table lineage" src="../assets/diagrams/01-lineage.svg" /></p>
+<p>The Snowflake database <code>BTC_TRADING</code> contains <code>BINANCE_BRONZE</code>, <code>BINANCE_SILVER</code>, <code>BINANCE_GOLD</code> and <code>ORCHESTRATION</code>. Local Python downloads and converts archives; an internal stage receives Parquet. <code>COPY INTO</code> populates Bronze. A Snowflake dbt project builds Silver and Gold. Tasks establish ordering, while <code>ref()</code> establishes model dependencies. <code>source_file</code> and <code>ingested_at</code> retain file-level provenance.</p>
+<p>The daily summary is the shared analytical input. Building indicators from approximately one row per day avoids repeating billion-row trade aggregations for each mart.</p>
+<h2>Execution graph</h2>
+<p><img alt="Task orchestration" src="../assets/diagrams/02-orchestration.svg" /></p>
+<p>Both roots call <code>DQ_LANDING_SCOPE</code> through mode-specific SQL. FULL checks landing, resets its configured tables and forces Bronze reload; DELTA leaves existing data in place and relies on load history. Both then build Silver trades and daily summary, validate summary coverage, and fan out to four Gold tasks. Only DELTA joins all four branches before retention.</p>
+<p>A failed task blocks its dependent tasks. Earlier writes remain committed; the graph is not a single transaction. Concurrent FULL, DELTA, uploads and retention can invalidate the assumed snapshot, so operate them sequentially.</p>
+<h2>Snowflake ingestion</h2>
+<p><img alt="Snowflake ingestion" src="../assets/diagrams/04-ingestion.svg" /></p>
+<p>Local Python downloads daily Binance ZIP archives, extracts CSV and converts it to Parquet. The files are uploaded to the internal landing stage, then COPY INTO loads Bronze. SQL/dbt and Tasks handle the downstream transformations. Local preparation reflects the account restrictions encountered in this experiment; it is not a general limitation on Snowflake external access.</p>
+<h2>Repository responsibilities</h2>
+<p><img alt="Repository layout" src="../assets/diagrams/03-repository.svg" /></p>
+<p><code>setup_init</code> and <code>setup_redeploy</code> deploy objects and code. <code>local</code> and <code>src</code> prepare files. <code>etl</code> and <code>macros</code> implement transformations. <code>quality</code> defines gates; <code>orchestration</code> defines graphs; <code>maintenance</code> handles retention; <code>debug_sql</code> and <code>pipeline_evaluation</code> support operation and measurement. <code>docs</code> is the static website and documentation. Data and credentials do not belong in the published site.</p>
+<h2>Governance and boundaries</h2>
+<p>Engineering, operations and Gold-only consumer roles are proposed, not proven by the supplied access tests. The report's 90-day detail retention plus cold archival is also a proposal; the executable retention is 366 days with no cold-archive step. Keep enough archived lookback to rebuild SMAs, and preserve a CVD seed if a cumulative total must survive full reconstruction after pruning.</p>
+<p>See <a href="source_reconciliation.html">source reconciliation</a> before interpreting the original report's diagrams as the exact Snowflake task graph.</p>
+<h2>dbt implementation</h2>
+<p>I use <strong>dbt</strong> for the Silver and Gold SQL transformations. The supplied deployment screenshot shows project <code>BTC_TRADING.ORCHESTRATION.BINANCE</code> running dbt <strong>1.9.4</strong> from the repository’s <code>main</code> branch. See <a href="dbt.html">Working with dbt</a> for model design and deployment evidence.</p>
+<h2>Supplied execution evidence</h2>
+<h3>Model dependencies in dbt</h3>
+<p>The dbt DAG connects the Bronze source to Silver trades, the daily summary and four Gold models.</p>
+<p><img alt="Model dependencies in dbt" src="../../img/snowflake-data-lineage.png" /></p>
+<h3>FULL graph · successful run</h3>
+<p>The supplied task history shows all ten FULL tasks succeeded, including reset, Bronze, Silver, summary DQ and the four Gold branches.</p>
+<p><img alt="FULL graph · successful run" src="../../img/snowflake-full-pipeline.png" /></p>
+<h3>DELTA graph · successful run</h3>
+<p>All ten DELTA tasks succeeded in the supplied run, ending with DELTA_PRUNE_366_DAYS.</p>
+<p><img alt="DELTA graph · successful run" src="../../img/snowflake-delta-pipeline.png" /></p></main></body></html>

@@ -1,0 +1,86 @@
+<?xml version='1.0' encoding='utf-8'?>
+<mxfile host="app.diagrams.net" version="24.7.17">
+  <diagram name="02 / Quality gates control publication" id="02-orchestration">
+    <mxGraphModel dx="1400" dy="1060" grid="1" gridSize="10" page="1" pageWidth="1400" pageHeight="1060" background="#0d0c10">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" value="02 / Quality gates control publication" style="text;html=0;strokeColor=none;fillColor=none;fontColor=#ff2bd6;fontSize=30;fontStyle=1;align=left;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="45" y="22" width="1310" height="52" as="geometry" />
+        </mxCell>
+        <mxCell id="subtitle" value="Executable Snowflake graph · FULL and DELTA are manual roots · boxes group tasks for readability" style="text;html=0;strokeColor=none;fillColor=none;fontColor=#c0c5d5;fontSize=17;fontStyle=1;align=left;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="45" y="77" width="1310" height="46" as="geometry" />
+        </mxCell>
+        <mxCell id="full" value="BINANCE_BITCOIN_FULL&#10;Landing DQ → reset → forced Bronze reload" style="rounded=1;whiteSpace=wrap;html=0;fillColor=#382518;strokeColor=#dba26b;fontColor=#ebe9ef;fontSize=19;fontStyle=1;align=center;verticalAlign=middle;spacing=12;" vertex="1" parent="1">
+          <mxGeometry x="80" y="145" width="560" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="delta" value="BINANCE_BITCOIN_DELTA&#10;Landing DQ → COPY new files" style="rounded=1;whiteSpace=wrap;html=0;fillColor=#382518;strokeColor=#dba26b;fontColor=#ebe9ef;fontSize=19;fontStyle=1;align=center;verticalAlign=middle;spacing=12;" vertex="1" parent="1">
+          <mxGeometry x="760" y="145" width="560" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="trades" value="SILVER_BTCUSDT_TRADES&#10;dbt build" style="rounded=1;whiteSpace=wrap;html=0;fillColor=#252633;strokeColor=#c0c5d5;fontColor=#ebe9ef;fontSize=18;fontStyle=1;align=center;verticalAlign=middle;spacing=12;" vertex="1" parent="1">
+          <mxGeometry x="430" y="295" width="540" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="summary" value="SILVER_BTCUSDT_DAILY_TRADE_SUMMARY&#10;dbt build" style="rounded=1;whiteSpace=wrap;html=0;fillColor=#252633;strokeColor=#c0c5d5;fontColor=#ebe9ef;fontSize=17;fontStyle=1;align=center;verticalAlign=middle;spacing=12;" vertex="1" parent="1">
+          <mxGeometry x="430" y="410" width="540" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="dq" value="DQ_AFTER_SUMMARY&#10;FULL: landing bounds · DELTA: through UTC D−1" style="rounded=1;whiteSpace=wrap;html=0;fillColor=#33132e;strokeColor=#ff2bd6;fontColor=#ebe9ef;fontSize=17;fontStyle=1;align=center;verticalAlign=middle;spacing=12;" vertex="1" parent="1">
+          <mxGeometry x="430" y="525" width="540" height="85" as="geometry" />
+        </mxCell>
+        <mxCell id="s50" value="GOLD · SMA50" style="rounded=1;whiteSpace=wrap;html=0;fillColor=#352d13;strokeColor=#e8c568;fontColor=#ebe9ef;fontSize=19;fontStyle=1;align=center;verticalAlign=middle;spacing=12;" vertex="1" parent="1">
+          <mxGeometry x="40" y="675" width="310" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="s200" value="GOLD · SMA200" style="rounded=1;whiteSpace=wrap;html=0;fillColor=#352d13;strokeColor=#e8c568;fontColor=#ebe9ef;fontSize=19;fontStyle=1;align=center;verticalAlign=middle;spacing=12;" vertex="1" parent="1">
+          <mxGeometry x="375" y="675" width="310" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="cvd" value="GOLD · CVD" style="rounded=1;whiteSpace=wrap;html=0;fillColor=#352d13;strokeColor=#e8c568;fontColor=#ebe9ef;fontSize=19;fontStyle=1;align=center;verticalAlign=middle;spacing=12;" vertex="1" parent="1">
+          <mxGeometry x="710" y="675" width="310" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="vwap" value="GOLD · VWAP" style="rounded=1;whiteSpace=wrap;html=0;fillColor=#352d13;strokeColor=#e8c568;fontColor=#ebe9ef;fontSize=19;fontStyle=1;align=center;verticalAlign=middle;spacing=12;" vertex="1" parent="1">
+          <mxGeometry x="1045" y="675" width="310" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="prune" value="DELTA_PRUNE_366_DAYS&#10;Only after all four Gold tasks succeed" style="rounded=1;whiteSpace=wrap;html=0;fillColor=#18151e;strokeColor=#706579;fontColor=#ebe9ef;fontSize=18;fontStyle=1;align=center;verticalAlign=middle;spacing=12;" vertex="1" parent="1">
+          <mxGeometry x="430" y="815" width="540" height="85" as="geometry" />
+        </mxCell>
+        <mxCell id="note" value="FULL ends after Gold. A failed gate blocks descendants; earlier writes remain." style="rounded=1;whiteSpace=wrap;html=0;fillColor=#18151e;strokeColor=#706579;fontColor=#ebe9ef;fontSize=17;fontStyle=1;align=center;verticalAlign=middle;spacing=12;" vertex="1" parent="1">
+          <mxGeometry x="230" y="945" width="940" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="e0" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=0;strokeColor=#90849d;strokeWidth=2;endArrow=block;endFill=1;" edge="1" parent="1" source="full" target="trades">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=0;strokeColor=#90849d;strokeWidth=2;endArrow=block;endFill=1;" edge="1" parent="1" source="delta" target="trades">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=0;strokeColor=#90849d;strokeWidth=2;endArrow=block;endFill=1;" edge="1" parent="1" source="trades" target="summary">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=0;strokeColor=#90849d;strokeWidth=2;endArrow=block;endFill=1;" edge="1" parent="1" source="summary" target="dq">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e4" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=0;strokeColor=#90849d;strokeWidth=2;endArrow=block;endFill=1;" edge="1" parent="1" source="dq" target="s50">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e5" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=0;strokeColor=#90849d;strokeWidth=2;endArrow=block;endFill=1;" edge="1" parent="1" source="dq" target="s200">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e6" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=0;strokeColor=#90849d;strokeWidth=2;endArrow=block;endFill=1;" edge="1" parent="1" source="dq" target="cvd">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e7" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=0;strokeColor=#90849d;strokeWidth=2;endArrow=block;endFill=1;" edge="1" parent="1" source="dq" target="vwap">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e8" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=0;strokeColor=#90849d;strokeWidth=2;endArrow=block;endFill=1;" edge="1" parent="1" source="s50" target="prune">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e9" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=0;strokeColor=#90849d;strokeWidth=2;endArrow=block;endFill=1;" edge="1" parent="1" source="s200" target="prune">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e10" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=0;strokeColor=#90849d;strokeWidth=2;endArrow=block;endFill=1;" edge="1" parent="1" source="cvd" target="prune">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e11" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=0;strokeColor=#90849d;strokeWidth=2;endArrow=block;endFill=1;" edge="1" parent="1" source="vwap" target="prune">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

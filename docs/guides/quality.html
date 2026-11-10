@@ -1,0 +1,54 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>quality | Snowflake BTCUSDT</title><link rel="stylesheet" href="../assets/site.css"></head><body><main class="wrap article"><a class="back" href="../../index.html#docs">← Project documentation</a><h1>Quality controls · implemented Snowflake behavior</h1>
+<p>Reviewed against <code>quality/*.sql</code>, <code>etl/silver/sources.yml</code> and both task graphs. The supplied PDF contradicts the code on landing validation; the code is authoritative for this repository.</p>
+<table>
+<thead>
+<tr>
+<th>Control</th>
+<th>Placement</th>
+<th>What passes</th>
+<th>Failure effect</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>DQ_LANDING_SCOPE()</code></td>
+<td>Both root tasks, before COPY and FULL reset</td>
+<td>Nonempty matching file set, valid dates/names, one archive per date and continuous min-to-max coverage</td>
+<td>Root fails; descendants do not run</td>
+</tr>
+<tr>
+<td>dbt <code>not_null</code> on Bronze <code>source_file</code></td>
+<td>Declared in <code>sources.yml</code>, selected through dbt build dependencies</td>
+<td>Provenance field is not NULL</td>
+<td>A failing selected test fails its dbt task</td>
+</tr>
+<tr>
+<td><code>DQ_AFTER_SUMMARY(payload)</code></td>
+<td>After summary, before four Gold branches</td>
+<td>Exactly one BTCUSDT summary row per date in the requested inclusive interval</td>
+<td>Gold and downstream retention are blocked</td>
+</tr>
+</tbody>
+</table>
+<h2>Scope</h2>
+<p>Landing scans matching <code>BTCUSDT-trades-*.parquet</code> files and derives <code>lo</code> and <code>hi</code> from them. It catches gaps <strong>inside</strong> those endpoints, duplicate daily files and invalid matching names/dates. It cannot detect that the intended first or last archive is missing because there is no independently configured expected interval. Files outside its matching pattern are not covered by this validation.</p>
+<p>FULL passes <code>summary_hi = landing hi</code>. DELTA passes yesterday in UTC, irrespective of the latest staged date. The payload also carries <code>lo</code> and <code>hi</code> as ISO dates. Thus a stage ending too early can pass landing DQ and still fail DELTA summary DQ. Task config dates are not read by these root scripts.</p>
+<p>Summary DQ compares <code>COUNT(DISTINCT data)</code> to <code>DATEDIFF(day, lo, hi)+1</code>, and total rows to distinct dates. It filters symbol and interval. It does not examine rows outside that interval.</p>
+<h2>What is not implemented</h2>
+<p>There is no <code>DQ_BEFORE_SUMMARY</code> task, required <code>DQ_SUMMARY_BASELINE</code>, summary/trade-count reconciliation in the DQ procedure, comprehensive field validation, trade deduplication, or price/volume reconciliation. Count comparison in the summary model selects days to recompute; it is not an independent acceptance test. The report's broader quality rules remain proposals unless explicitly implemented in code.</p>
+<h2>Demonstrate detection and recovery</h2>
+<p>Use <code>debug_sql/demo/demo_delta_backfill.sql</code> in a test environment, one numbered section at a time and in the same session. Its preflight checks coverage and source counts, backs up one summary row, deletes it, calls DQ directly to capture <code>BAD_SUMMARY</code>, then runs ordinary DELTA and verifies recovery.</p>
+<p>Calling DQ <strong>before</strong> DELTA is essential to demonstrate the failure. DELTA may repair the missing row before its post-summary gate, in which case a successful graph is expected. Wait for descendants; do not use Run All.</p>
+<p>For a landing-gap test, remove an <strong>interior</strong> day's archive from a disposable test stage after preserving a copy. <code>DQ_LANDING_SCOPE</code> should raise a missing-day error; restore it before processing. Removing the first or last file only changes the discovered bounds and does not prove missing-endpoint detection.</p>
+<h2>Operational evidence</h2>
+<pre><code class="language-sql">SELECT name, state, scheduled_time, completed_time, error_message
+FROM TABLE(BTC_TRADING.INFORMATION_SCHEMA.TASK_HISTORY(RESULT_LIMIT =&gt; 1000))
+WHERE database_name = 'BTC_TRADING' AND schema_name = 'ORCHESTRATION'
+ORDER BY scheduled_time DESC;
+</code></pre>
+<p>Capture failed and successful task runs, the direct DQ error, before/after summary counts and source availability. A successful coverage check does not certify every value or prove that all four Gold tasks have finished.</p>
+<h2>Capture the actual error for the website</h2>
+<p>Use <code>debug_sql/demo/demo_quality_failure_screenshot.sql</code> for <code>snowflake-quality-failure.png</code>. Execute its four sections separately in one session while pipelines are idle. It first checks an existing day, removes its summary row inside an explicit transaction, then calls DQ without catching the exception. Capture the visible <code>BAD_SUMMARY</code> error before executing the final <code>ROLLBACK</code> and PASS check. This is a direct procedure test; it does not create a failed Task graph run or demonstrate DELTA recovery.</p>
+<h2>Captured failure</h2>
+<p>A direct call to DQ_AFTER_SUMMARY raises BAD_SUMMARY after the controlled removal of a summary row. This is a procedure test, not a failed Task graph.</p>
+<p><img alt="BAD_SUMMARY error" src="../../img/snowflake-quality-failure.png" /></p></main></body></html>
