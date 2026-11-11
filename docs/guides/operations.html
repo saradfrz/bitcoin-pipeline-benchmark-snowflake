@@ -63,7 +63,7 @@ EXECUTE TASK BTC_TRADING.ORCHESTRATION.BINANCE_BITCOIN_DELTA;
 <p>GitHub Pages must publish <strong>main / (root)</strong> so the root <code>img/</code> directory is served. See <a href="../../deploy_github_pages.md">deployment instructions</a>. Preview from the repository root with <code>python -m http.server 8000</code>, then open <code>http://localhost:8000</code>.</p>
 <ul>
 <li><a href="../architecture.md">Architecture</a></li>
-<li><a href="../dbt.md">Working with dbt</a></li>
+<li><a href="../dbt.md">dbt implementation</a></li>
 <li><a href="../modelling.md">Modelling</a></li>
 <li><a href="../quality_checks.md">Quality checks</a></li>
 <li><a href="../backfill.md">Backfill and recovery</a></li>
@@ -73,7 +73,7 @@ EXECUTE TASK BTC_TRADING.ORCHESTRATION.BINANCE_BITCOIN_DELTA;
 <li><a href="../diagrams.md">Editable diagrams</a></li>
 </ul>
 <h2>dbt implementation</h2>
-<p>I use <strong>dbt</strong> for the Silver and Gold SQL transformations. The deployed project <code>BTC_TRADING.ORCHESTRATION.BINANCE</code> uses dbt <strong>1.9.4</strong>, sourced from the <code>main</code> branch, with profile <code>binance</code>, target <code>snowflake</code> and warehouse <code>SNOWFLAKE_LEARNING_WH</code>. Snowflake Tasks orchestrate dbt builds alongside COPY ingestion, summary DQ and retention.</p>
+<p>The platform uses <strong>dbt</strong> for the Silver and Gold SQL transformations. The deployed project <code>BTC_TRADING.ORCHESTRATION.BINANCE</code> uses dbt <strong>1.9.4</strong>, sourced from the <code>main</code> branch, with profile <code>binance</code>, target <code>snowflake</code> and warehouse <code>SNOWFLAKE_LEARNING_WH</code>. Snowflake Tasks orchestrate dbt builds alongside COPY ingestion, summary DQ and retention.</p>
 <p><img alt="dbt project" src="../../img/dbt-project.png" /></p>
 <h2>Captured results</h2>
 <p>The supplied screenshots show 1,107,431,071 rows in both Bronze and Silver trades and 312 rows in the daily summary and each Gold mart. Both FULL and DELTA captures show all ten tasks succeeded. These are captured observations, not live metrics or proof of value-by-value reconciliation.</p>

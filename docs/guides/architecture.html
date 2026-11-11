@@ -18,7 +18,7 @@
 <p>Engineering, operations and Gold-only consumer roles are proposed, not proven by the supplied access tests. The report's 90-day detail retention plus cold archival is also a proposal; the executable retention is 366 days with no cold-archive step. Keep enough archived lookback to rebuild SMAs, and preserve a CVD seed if a cumulative total must survive full reconstruction after pruning.</p>
 <p>See <a href="source_reconciliation.html">source reconciliation</a> before interpreting the original report's diagrams as the exact Snowflake task graph.</p>
 <h2>dbt implementation</h2>
-<p>I use <strong>dbt</strong> for the Silver and Gold SQL transformations. The supplied deployment screenshot shows project <code>BTC_TRADING.ORCHESTRATION.BINANCE</code> running dbt <strong>1.9.4</strong> from the repository’s <code>main</code> branch. See <a href="dbt.html">Working with dbt</a> for model design and deployment evidence.</p>
+<p>The platform uses <strong>dbt</strong> for the Silver and Gold SQL transformations. The supplied deployment screenshot shows project <code>BTC_TRADING.ORCHESTRATION.BINANCE</code> running dbt <strong>1.9.4</strong> from the repository’s <code>main</code> branch. See <a href="dbt.html">dbt implementation</a> for model design and deployment evidence.</p>
 <h2>Supplied execution evidence</h2>
 <h3>Model dependencies in dbt</h3>
 <p>The dbt DAG connects the Bronze source to Silver trades, the daily summary and four Gold models.</p>

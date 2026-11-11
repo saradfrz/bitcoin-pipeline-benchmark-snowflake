@@ -89,7 +89,7 @@
 <p>For example, 2 BTC bought aggressively at 80,000 USDT and 1 BTC sold aggressively at 83,000 produce 243,000 USDT of volume, a VWAP of 81,000 and delta of +1 BTC. If the previous CVD is 10 BTC, the next value is 11 BTC.</p>
 <p>Gold detects changes to its input fields, but it cannot detect a correction that Silver has not propagated. Source deletions are also not automatically removed from MERGE targets. See <a href="backfill.html">backfill</a>.</p>
 <h2>dbt implementation</h2>
-<p>I use <strong>dbt</strong> for the Silver and Gold SQL transformations. The supplied deployment screenshot shows project <code>BTC_TRADING.ORCHESTRATION.BINANCE</code> running dbt <strong>1.9.4</strong> from the repository’s <code>main</code> branch. See <a href="dbt.html">Working with dbt</a> for model design and deployment evidence.</p>
+<p>The platform uses <strong>dbt</strong> for the Silver and Gold SQL transformations. The supplied deployment screenshot shows project <code>BTC_TRADING.ORCHESTRATION.BINANCE</code> running dbt <strong>1.9.4</strong> from the repository’s <code>main</code> branch. See <a href="dbt.html">dbt implementation</a> for model design and deployment evidence.</p>
 <h2>Supplied execution evidence</h2>
 <h3>Gold products · ten-date preview</h3>
 <p>Query results show closing price, SMA50, SMA200, CVD and VWAP for ten dates through 2026-11-08. Values are rounded for display.</p>

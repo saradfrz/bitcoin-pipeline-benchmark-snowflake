@@ -1,6 +1,6 @@
-# Working with dbt in Snowflake
+# dbt implementation in Snowflake
 
-I use **dbt** to implement the SQL transformations in the Silver and Gold layers of this BTCUSDT pipeline. Bronze ingestion uses COPY INTO; Snowflake Tasks coordinate dbt execution with ingestion, the summary quality gate and retention.
+The platform uses **dbt** to implement the SQL transformations in the Silver and Gold layers of this BTCUSDT pipeline. Bronze ingestion uses COPY INTO; Snowflake Tasks coordinate dbt execution with ingestion, the summary quality gate and retention.
 
 ## Deployment evidence
 

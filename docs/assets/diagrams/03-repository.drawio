@@ -5,13 +5,13 @@
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
-        <mxCell id="title" value="03 / Code organized by responsibility" style="text;html=0;strokeColor=none;fillColor=none;fontColor=#ff2bd6;fontSize=30;fontStyle=1;align=left;verticalAlign=middle;" vertex="1" parent="1">
+        <mxCell id="title" value="03 / Code organized by responsibility" style="text;html=0;strokeColor=none;fillColor=none;fontColor=#9bb3c9;fontSize=30;fontStyle=1;align=left;verticalAlign=middle;" vertex="1" parent="1">
           <mxGeometry x="45" y="22" width="1310" height="52" as="geometry" />
         </mxCell>
         <mxCell id="subtitle" value="Snowflake repository · root-based deployment paths · data files remain outside Git" style="text;html=0;strokeColor=none;fillColor=none;fontColor=#c0c5d5;fontSize=17;fontStyle=1;align=left;verticalAlign=middle;" vertex="1" parent="1">
           <mxGeometry x="45" y="77" width="1310" height="46" as="geometry" />
         </mxCell>
-        <mxCell id="root" value="bitcoin-pipeline-benchmark-snowflake&#10;SQL + dbt + local Python" style="rounded=1;whiteSpace=wrap;html=0;fillColor=#33132e;strokeColor=#ff2bd6;fontColor=#ebe9ef;fontSize=18;fontStyle=1;align=center;verticalAlign=middle;spacing=12;" vertex="1" parent="1">
+        <mxCell id="root" value="bitcoin-pipeline-benchmark-snowflake&#10;SQL + dbt + local Python" style="rounded=1;whiteSpace=wrap;html=0;fillColor=#202c38;strokeColor=#9bb3c9;fontColor=#ebe9ef;fontSize=18;fontStyle=1;align=center;verticalAlign=middle;spacing=12;" vertex="1" parent="1">
           <mxGeometry x="430" y="145" width="540" height="75" as="geometry" />
         </mxCell>
         <mxCell id="deploy" value="DEPLOY&#10;setup_init / setup_redeploy&#10;Namespaces, DDL, Git + dbt" style="rounded=1;whiteSpace=wrap;html=0;fillColor=#18151e;strokeColor=#706579;fontColor=#ebe9ef;fontSize=17;fontStyle=1;align=center;verticalAlign=middle;spacing=12;" vertex="1" parent="1">

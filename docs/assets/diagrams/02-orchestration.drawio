@@ -5,7 +5,7 @@
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
-        <mxCell id="title" value="02 / Quality gates control publication" style="text;html=0;strokeColor=none;fillColor=none;fontColor=#ff2bd6;fontSize=30;fontStyle=1;align=left;verticalAlign=middle;" vertex="1" parent="1">
+        <mxCell id="title" value="02 / Quality gates control publication" style="text;html=0;strokeColor=none;fillColor=none;fontColor=#9bb3c9;fontSize=30;fontStyle=1;align=left;verticalAlign=middle;" vertex="1" parent="1">
           <mxGeometry x="45" y="22" width="1310" height="52" as="geometry" />
         </mxCell>
         <mxCell id="subtitle" value="Executable Snowflake graph · FULL and DELTA are manual roots · boxes group tasks for readability" style="text;html=0;strokeColor=none;fillColor=none;fontColor=#c0c5d5;fontSize=17;fontStyle=1;align=left;verticalAlign=middle;" vertex="1" parent="1">
@@ -23,7 +23,7 @@
         <mxCell id="summary" value="SILVER_BTCUSDT_DAILY_TRADE_SUMMARY&#10;dbt build" style="rounded=1;whiteSpace=wrap;html=0;fillColor=#252633;strokeColor=#c0c5d5;fontColor=#ebe9ef;fontSize=17;fontStyle=1;align=center;verticalAlign=middle;spacing=12;" vertex="1" parent="1">
           <mxGeometry x="430" y="410" width="540" height="70" as="geometry" />
         </mxCell>
-        <mxCell id="dq" value="DQ_AFTER_SUMMARY&#10;FULL: landing bounds · DELTA: through UTC D−1" style="rounded=1;whiteSpace=wrap;html=0;fillColor=#33132e;strokeColor=#ff2bd6;fontColor=#ebe9ef;fontSize=17;fontStyle=1;align=center;verticalAlign=middle;spacing=12;" vertex="1" parent="1">
+        <mxCell id="dq" value="DQ_AFTER_SUMMARY&#10;FULL: landing bounds · DELTA: through UTC D−1" style="rounded=1;whiteSpace=wrap;html=0;fillColor=#202c38;strokeColor=#9bb3c9;fontColor=#ebe9ef;fontSize=17;fontStyle=1;align=center;verticalAlign=middle;spacing=12;" vertex="1" parent="1">
           <mxGeometry x="430" y="525" width="540" height="85" as="geometry" />
         </mxCell>
         <mxCell id="s50" value="GOLD · SMA50" style="rounded=1;whiteSpace=wrap;html=0;fillColor=#352d13;strokeColor=#e8c568;fontColor=#ebe9ef;fontSize=19;fontStyle=1;align=center;verticalAlign=middle;spacing=12;" vertex="1" parent="1">

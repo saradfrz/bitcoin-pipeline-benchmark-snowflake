@@ -43,7 +43,7 @@ Gold detects changes to its input fields, but it cannot detect a correction that
 
 ## dbt implementation
 
-I use **dbt** for the Silver and Gold SQL transformations. The supplied deployment screenshot shows project `BTC_TRADING.ORCHESTRATION.BINANCE` running dbt **1.9.4** from the repository’s `main` branch. See [Working with dbt](dbt.md) for model design and deployment evidence.
+The platform uses **dbt** for the Silver and Gold SQL transformations. The supplied deployment screenshot shows project `BTC_TRADING.ORCHESTRATION.BINANCE` running dbt **1.9.4** from the repository’s `main` branch. See [dbt implementation](dbt.md) for model design and deployment evidence.
 
 ## Supplied execution evidence
 
